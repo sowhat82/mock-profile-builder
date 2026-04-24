@@ -25,18 +25,17 @@ class PIIDetection:
 
 
 # spaCy label → our PII type
+# GPE (countries, cities) and LOC are intentionally excluded — country names should not be mocked
 _SPACY_LABEL_MAP = {
     "PERSON": "NAME",
     "ORG": "ENTITY_NAME",
-    "GPE": "ADDRESS_FRAGMENT",
-    "LOC": "ADDRESS_FRAGMENT",
     "DATE": "DATE",
     "CARDINAL": None,  # skip
     "MONEY": "FINANCIAL_GENERIC",
 }
 
 # PII types to skip from spaCy (already handled by regex)
-_SKIP_NER_TYPES = FINANCIAL_TYPES | DATE_TYPES | ID_TYPES | PHONE_TYPES | {"EMAIL", "POSTCODE_SG"}
+_SKIP_NER_TYPES = FINANCIAL_TYPES | DATE_TYPES | ID_TYPES | PHONE_TYPES | {"EMAIL", "POSTCODE_SG", "ADDRESS_SG"}
 
 
 def _regex_detect_page(text: str, page_num: int) -> tuple[list[PIIDetection], set[tuple[int, int]]]:
@@ -96,11 +95,16 @@ def _ner_detect_page(text: str, page_num: int, claimed: set[tuple[int, int]], nl
             "email", "date", "name", "address", "mobile", "phone", "fax",
             "portfolio", "account", "total", "aum", "company", "ref",
             "manager", "client", "profile", "mr", "mrs", "ms", "dr",
+            # Common English words spaCy wrongly tags as ORG
+            "treasury", "banking", "equity", "infrastructure", "litigation",
+            "fintech", "software", "technology", "systems", "holdings",
+            "capital", "financial", "wealth", "enterprise", "regional",
         }
         if (not overlaps
                 and len(ent_text) > 1
                 and "\n" not in ent_text
-                and ent_text.lower() not in _SKIP_WORDS):
+                and ent_text.lower() not in _SKIP_WORDS
+                and ent_text[0].isupper()):
             detections.append(PIIDetection(
                 original_text=ent_text,
                 pii_type=pii_type,

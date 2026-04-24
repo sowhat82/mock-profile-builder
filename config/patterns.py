@@ -76,7 +76,18 @@ PATTERNS = [
         r'\b\d{1,3}(?:,\d{3})+(?:\.\d{2})?\b'
     ), 62),
 
-    # --- Singapore postal codes ---
+    # --- Singapore street address (full: street + unit + postal code) — runs before standalone postcode ---
+    # Uses [ -] not \s in the name portion to prevent matching across newlines.
+    # \b after street type prevents "St" from matching inside words like "institutions".
+    ("ADDRESS_SG", re.compile(
+        r'\d+[A-Za-z]?\s+[A-Za-z][A-Za-z -]+?'
+        r'(?:Road|Street|Avenue|Drive|Lane|Crescent|Close|Way|Boulevard|Rise|Walk|View|Hill|Place|Garden|Ave|Rd|St|Dr)\b'
+        r'(?:,?\s*#\d{2,3}-\d{2,4})?'
+        r'(?:,?\s*Singapore\s+\d{6})?',
+        re.IGNORECASE
+    ), 69),
+
+    # --- Singapore postal codes (standalone, not already part of an ADDRESS_SG match) ---
     ("POSTCODE_SG", re.compile(
         r'(?:Singapore\s+)?\b[0-9]{6}\b(?!\s*\-|\d)'
     ), 70),

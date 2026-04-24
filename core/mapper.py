@@ -113,14 +113,13 @@ class MappingTable:
         elif pii_type == "ENTITY_NAME":
             return generate_fake_entity(norm)
 
-        elif pii_type == "ADDRESS_FRAGMENT":
-            # Short address fragments — generate a Singapore street name
-            return generate_fake_address(norm)
-
         elif pii_type in FINANCIAL_TYPES:
             if self._scale_financials:
                 return scale_financial(norm, self._multiplier)
             return norm  # No change if scaling disabled
+
+        elif pii_type == "ADDRESS_SG":
+            return generate_fake_address(norm)
 
         elif pii_type == "POSTCODE_SG":
             from mocks.addresses import _generate_sg_postal_code
@@ -183,6 +182,14 @@ class MappingTable:
         """Get existing mapping or create a new one."""
         norm = self._normalise(original)
         if norm not in self._table:
+            # If this short token is a substring of an already-mapped longer value,
+            # reuse that mapping for consistency (e.g. "CapVista" → same fake as "CapVista Technologies Pte Ltd")
+            for existing_orig, existing_fake in self._table.items():
+                if (norm in existing_orig and len(norm) < len(existing_orig)
+                        and self._type_map.get(existing_orig) == pii_type):
+                    self._table[norm] = existing_fake
+                    self._type_map[norm] = pii_type
+                    return existing_fake
             self._table[norm] = self._generate_fake(norm, pii_type)
             self._type_map[norm] = pii_type
         return self._table[norm]
