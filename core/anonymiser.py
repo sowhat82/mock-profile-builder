@@ -34,11 +34,15 @@ def anonymise_text(text: str, mapping_table: MappingTable, excluded_originals: s
     for original, fake in replacements:
         if not original:
             continue
-        # Use word-boundary-aware replacement where possible
         try:
-            # Escape special regex chars in original
             escaped = re.escape(original)
-            result = re.sub(escaped, fake, result)
+            # Allow any whitespace (including newlines) where spaces appear in the
+            # original key — PDF text extraction can produce whitespace variations
+            flexible = escaped.replace(r'\ ', r'\s+')
+            # re.sub replacement strings interpret \1, \g<n> etc — escape backslashes
+            # in the fake value to prevent that
+            safe_fake = fake.replace('\\', r'\\')
+            result = re.sub(flexible, safe_fake, result)
         except re.error:
             result = result.replace(original, fake)
 

@@ -119,7 +119,7 @@ class MappingTable:
             return norm  # No change if scaling disabled
 
         elif pii_type == "ADDRESS_SG":
-            return generate_fake_address(norm)
+            return generate_fake_address(norm) + " (test-data)"
 
         elif pii_type == "POSTCODE_SG":
             from mocks.addresses import _generate_sg_postal_code
