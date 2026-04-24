@@ -3,6 +3,7 @@ Mock Profile Builder — Streamlit UI
 Anonymises client PDF profiles for use as test data in wealth management systems.
 """
 import io
+import os
 import re
 import streamlit as st
 import pandas as pd
@@ -57,6 +58,17 @@ with st.sidebar:
         help="Upload a client profile PDF to anonymise",
     )
 
+    st.caption("— or —")
+    if st.button("📄 Load sample document", use_container_width=True,
+                 help="Load a pre-built pseudo client profile (Bernard Tan, Meridian Private Bank)"):
+        sample_path = os.path.join(os.path.dirname(__file__), "samples", "sample_client_profile.pdf")
+        if os.path.exists(sample_path):
+            with open(sample_path, "rb") as f:
+                st.session_state["_sample_pdf_bytes"] = f.read()
+                st.session_state["_use_sample"] = True
+        else:
+            st.error("Sample PDF not found. Run: python samples/generate_sample.py")
+
     st.divider()
 
     scale_toggle = st.toggle(
@@ -92,10 +104,17 @@ with st.sidebar:
 
     st.divider()
 
-    if uploaded_file is not None:
+    # Resolve active PDF source (upload or sample)
+    _sample_bytes = st.session_state.get("_sample_pdf_bytes")
+    _active_pdf = uploaded_file is not None or bool(_sample_bytes)
+
+    if _active_pdf:
         if st.button("🔍 Detect PII", type="primary", use_container_width=True):
             with st.spinner("Extracting text and detecting PII…"):
-                pdf_bytes = uploaded_file.read()
+                if _sample_bytes:
+                    pdf_bytes = _sample_bytes
+                else:
+                    pdf_bytes = uploaded_file.read()
                 try:
                     document = extract(pdf_bytes)
                     st.session_state.document = document
@@ -155,13 +174,15 @@ with st.sidebar:
         for k in ["document", "detections", "mapping_table", "output_pdf_bytes",
                   "pii_df", "excluded_originals"]:
             st.session_state[k] = None if k != "excluded_originals" else set()
+        st.session_state.pop("_sample_pdf_bytes", None)
+        st.session_state.pop("_use_sample", None)
         st.session_state.upload_key += 1
         st.rerun()
 
 # ─── Main content area ────────────────────────────────────────────────────────
 
 if st.session_state.document is None:
-    st.info("👈 Upload a PDF in the sidebar and click **Detect PII** to get started.")
+    st.info("👈 Upload a PDF **or** click **Load sample document** in the sidebar, then click **Detect PII** to get started.")
     st.markdown("""
     **What this tool does:**
     - Extracts all text from your PDF
