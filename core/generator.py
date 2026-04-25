@@ -55,32 +55,37 @@ def _map_font(fontname: str, bold: bool, italic: bool) -> str:
     return base + suffix
 
 
-def _line_to_paragraph(line: LineInfo, page_width: float) -> Optional[Paragraph]:
-    """Convert a LineInfo to a reportlab Paragraph with approximate styling."""
+def _line_to_paragraph(line: LineInfo, page_width: float, text_override: str = None) -> Optional[Paragraph]:
+    """Convert a LineInfo to a reportlab Paragraph with approximate styling.
+    text_override: use this text instead of line.words text (for correctly anonymised content).
+    """
     if not line.words:
         return None
 
-    # Use the dominant word's font info
+    # Use the dominant word's font info for styling
     dominant = max(line.words, key=lambda w: w.font_size)
     fontname = _map_font(dominant.fontname, dominant.bold, dominant.italic)
     font_size = max(6, min(dominant.font_size, 36))
 
-    # Build HTML-escaped text with inline bold/italic spans
-    parts = []
-    for word in line.words:
-        text = word.text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-        fn = _map_font(word.fontname, word.bold, word.italic)
-        # Only wrap in span if different from dominant
-        if fn != fontname:
-            if word.bold and word.italic:
-                text = f"<b><i>{text}</i></b>"
-            elif word.bold:
-                text = f"<b>{text}</b>"
-            elif word.italic:
-                text = f"<i>{text}</i>"
-        parts.append(text)
+    if text_override is not None:
+        # Use the anonymised raw_text line — guaranteed to have PII replaced
+        text_content = text_override.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    else:
+        # Build HTML-escaped text with inline bold/italic spans from words
+        parts = []
+        for word in line.words:
+            text = word.text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            fn = _map_font(word.fontname, word.bold, word.italic)
+            if fn != fontname:
+                if word.bold and word.italic:
+                    text = f"<b><i>{text}</i></b>"
+                elif word.bold:
+                    text = f"<b>{text}</b>"
+                elif word.italic:
+                    text = f"<i>{text}</i>"
+            parts.append(text)
+        text_content = " ".join(parts)
 
-    text_content = " ".join(parts)
     if not text_content.strip():
         return None
 
@@ -198,10 +203,11 @@ def generate_pdf(document: DocumentContent) -> bytes:
             story.append(PageBreak())
 
         if page.lines:
-            # Use layout-aware line reconstruction
+            # Use layout-aware line reconstruction.
+            # Content comes from raw_text (correctly anonymised); lines provide layout hints only.
+            raw_lines = [l for l in (page.raw_text or "").split("\n")]
             prev_y = None
-            for line in page.lines:
-                # Add vertical spacing proportional to gap between lines
+            for line_idx, line in enumerate(page.lines):
                 if prev_y is not None:
                     gap = line.y0 - prev_y
                     if gap > 15:
@@ -209,7 +215,9 @@ def generate_pdf(document: DocumentContent) -> bytes:
                     elif gap > 6:
                         story.append(Spacer(1, 4))
 
-                para = _line_to_paragraph(line, page.width)
+                # Use the corresponding raw_text line as text override when available
+                text_override = raw_lines[line_idx] if line_idx < len(raw_lines) else None
+                para = _line_to_paragraph(line, page.width, text_override=text_override)
                 if para:
                     story.append(para)
                 prev_y = line.y1
