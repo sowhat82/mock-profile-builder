@@ -55,16 +55,55 @@ INDIAN_SURNAMES = [
 # Known Chinese surnames for detection
 CHINESE_SURNAME_SET = set(s.lower() for s in SG_CHINESE_SURNAMES)
 
-# Common Western given names for gender detection
+# Common given names for gender detection
 WESTERN_MALE_NAMES = {
     "james", "john", "robert", "michael", "william", "david", "richard",
     "joseph", "thomas", "charles", "christopher", "daniel", "paul", "mark",
     "george", "kenneth", "steven", "edward", "brian", "ronald", "peter",
+    "andrew", "anthony", "kevin", "jason", "matthew", "gary", "timothy",
+    "jose", "larry", "jeffrey", "frank", "scott", "eric", "stephen", "andrew",
+    "raymond", "gregory", "joshua", "jerry", "dennis", "walter", "patrick",
+    "peter", "harold", "douglas", "henry", "carl", "arthur", "ryan", "roger",
+    "joe", "juan", "jack", "albert", "jonathan", "justin", "terry", "gerald",
+    "keith", "samuel", "willie", "ralph", "lawrence", "nicholas", "roy",
+    "benjamin", "bruce", "brandon", "adam", "harry", "fred", "wayne", "billy",
+    "steve", "louis", "jeremy", "aaron", "randy", "eugene", "carlos", "russell",
+    "bobby", "victor", "martin", "ernest", "phillip", "todd", "jesse", "craig",
+    "alan", "shawn", "clarence", "sean", "philip", "chris", "johnny", "earl",
+    "jimmy", "antonio", "danny", "bryan", "tony", "luis", "mike", "stanley",
+    "leonard", "nathan", "dale", "manuel", "rodney", "curtis", "norman",
+    "allen", "marvin", "vincent", "glen", "jeffery", "travis", "jeff",
+    "chad", "jacob", "lee", "melvin", "alfred", "kyle", "francis",
+    "bradley", "bernard", "roland", "warren", "alan", "dean", "claude",
+    "felix", "ian", "evan", "neil", "ivan", "oscar", "kurt", "joel",
+    "ernest", "floyd", "leon", "ray", "lloyd", "don", "max", "rex",
+    # SG/Asian male names (English first names used in Singapore)
+    "alvin", "calvin", "darren", "desmond", "eldwin", "fabian", "gabriel",
+    "irvin", "ivan", "jasper", "kelvin", "lionel", "marcus", "nathaniel",
+    "oliver", "percival", "quinton", "reginald", "shaun", "tristan",
+    "ulric", "vaughan", "xavier", "yannick", "zachary",
 }
 WESTERN_FEMALE_NAMES = {
     "mary", "patricia", "jennifer", "linda", "barbara", "elizabeth", "susan",
     "jessica", "sarah", "karen", "lisa", "nancy", "betty", "margaret", "sandra",
     "ashley", "emily", "dorothy", "melissa", "deborah", "stephanie", "helen",
+    "sharon", "donna", "carol", "ruth", "virginia", "pamela", "amy", "angela",
+    "diane", "anna", "brenda", "janet", "maria", "julie", "victoria", "laura",
+    "frances", "alice", "kathleen", "beverly", "denise", "tammy", "irene",
+    "jane", "lori", "marilyn", "andrea", "kathryn", "louise", "rose",
+    "cynthia", "theresa", "jacqueline", "gloria", "wanda", "evelyn",
+    "cheryl", "mildred", "katherine", "joan", "ashley", "judith", "kelly",
+    "nicole", "judy", "christina", "kathy", "teresa", "dawn", "doris",
+    "rachel", "caroline", "amanda", "tina", "holly", "jessica", "melanie",
+    "diana", "robin", "crystal", "wendy", "grace", "brittany", "amber",
+    "danielle", "megan", "vanessa", "natalie", "sheila", "ann", "marie",
+    "claire", "eleanor", "june", "abigail", "emma", "olivia", "sophia",
+    "isabella", "ava", "mia", "ella", "chloe", "madison", "brooklyn",
+    # SG/Asian female names (English first names used in Singapore)
+    "adeline", "belinda", "corinna", "denise", "elaine", "felicia",
+    "germaine", "hwee", "irene", "joanna", "kathleen", "lynnette",
+    "marina", "nadine", "ophelia", "pauline", "queenie", "rachelle",
+    "serene", "theresa", "ursula", "valerie", "winnie", "yvonne",
 }
 
 
