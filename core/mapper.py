@@ -187,9 +187,16 @@ class MappingTable:
             for existing_orig, existing_fake in self._table.items():
                 if (norm in existing_orig and len(norm) < len(existing_orig)
                         and self._type_map.get(existing_orig) == pii_type):
-                    self._table[norm] = existing_fake
+                    # Single-word partial name (e.g. surname "Tan") → use only the
+                    # last word of the fake name (e.g. "Wood-test-data" not "Dennis Wood-test-data")
+                    if pii_type == "NAME" and " " not in norm:
+                        fake_parts = existing_fake.split()
+                        inherited = fake_parts[-1] if fake_parts else existing_fake
+                    else:
+                        inherited = existing_fake
+                    self._table[norm] = inherited
                     self._type_map[norm] = pii_type
-                    return existing_fake
+                    return inherited
             self._table[norm] = self._generate_fake(norm, pii_type)
             self._type_map[norm] = pii_type
         return self._table[norm]
