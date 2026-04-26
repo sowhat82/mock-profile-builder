@@ -9,7 +9,7 @@ import streamlit as st
 import pandas as pd
 
 from core.extractor import extract, DocumentContent
-from core.detector import detect, PIIDetection
+from core.detector import detect, PIIDetection, spacy_status
 from core.mapper import MappingTable
 from core.anonymiser import anonymise_document
 from core.generator import generate_pdf
@@ -57,6 +57,13 @@ with st.sidebar:
         key=f"uploader_{st.session_state.upload_key}",
         help="Upload a client profile PDF to anonymise",
     )
+
+    # spaCy NER status
+    _spacy_ok, _spacy_err = spacy_status()
+    if _spacy_ok:
+        st.success("NER: spaCy loaded ✓", icon="🧠")
+    else:
+        st.error(f"NER unavailable — name/company detection disabled. {_spacy_err}", icon="⚠️")
 
     st.caption("— or —")
     if st.button("📄 Load sample document", use_container_width=True,
