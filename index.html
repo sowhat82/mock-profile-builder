@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mockify — UBS</title>
+  <style>
+    :root {
+      --red: #EC0000;
+      --dark: #1a1a1a;
+      --gray-100: #f5f5f5;
+      --gray-200: #e0e0e0;
+      --gray-500: #888;
+      --white: #fff;
+      --shadow: 0 1px 4px rgba(0,0,0,0.10);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--gray-100); color: var(--dark); min-height: 100vh; }
+
+    header { background: var(--white); border-bottom: 3px solid var(--red); padding: 14px 32px; display: flex; align-items: center; gap: 18px; box-shadow: var(--shadow); }
+    header img { height: 38px; }
+    header h1 { font-size: 1.4rem; font-weight: 700; }
+    header p { font-size: 0.8rem; color: var(--gray-500); margin-top: 2px; }
+
+    main { max-width: 980px; margin: 28px auto; padding: 0 20px; }
+
+    .card { background: var(--white); border-radius: 8px; box-shadow: var(--shadow); padding: 22px 24px; margin-bottom: 18px; }
+    .card h2 { font-size: 0.95rem; font-weight: 600; margin-bottom: 14px; }
+
+    #alert { padding: 11px 15px; border-radius: 6px; font-size: 0.875rem; margin-bottom: 16px; }
+    #alert.info    { background: #eff6ff; color: #1d4ed8; border-left: 4px solid #3b82f6; }
+    #alert.success { background: #f0fdf4; color: #15803d; border-left: 4px solid #22c55e; }
+    #alert.error   { background: #fef2f2; color: #b91c1c; border-left: 4px solid var(--red); }
+
+    .drop-zone { border: 2px dashed var(--gray-200); border-radius: 6px; padding: 28px; text-align: center; cursor: pointer; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .drop-zone:hover, .drop-zone.over { border-color: var(--red); background: #fff5f5; }
+    .drop-zone .icon { font-size: 2.2rem; }
+    .drop-zone .hint { color: var(--gray-500); font-size: 0.85rem; margin-top: 6px; }
+    .drop-zone .fname { font-weight: 600; margin-top: 4px; font-size: 0.9rem; }
+
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border-radius: 5px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: opacity 0.15s; }
+    .btn:disabled { opacity: 0.38; cursor: not-allowed; }
+    .btn:not(:disabled):hover { opacity: 0.82; }
+    .primary { background: var(--red); color: #fff; }
+    .secondary { background: var(--gray-200); color: var(--dark); }
+    .success { background: #16a34a; color: #fff; text-decoration: none; }
+    .btn-row { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; align-items: center; }
+
+    .stats { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+    .stat { background: var(--gray-100); padding: 10px 16px; border-radius: 6px; min-width: 110px; }
+    .stat .v { font-size: 1.4rem; font-weight: 700; color: var(--red); }
+    .stat .l { font-size: 0.72rem; color: var(--gray-500); margin-top: 2px; }
+
+    .filters { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+    .filters select, .filters input { padding: 6px 10px; border: 1px solid var(--gray-200); border-radius: 5px; font-size: 0.85rem; flex: 1; min-width: 130px; }
+
+    .tbl-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th { background: var(--gray-100); padding: 9px 11px; text-align: left; font-size: 0.78rem; font-weight: 600; color: var(--gray-500); border-bottom: 2px solid var(--gray-200); white-space: nowrap; }
+    td { padding: 7px 11px; border-bottom: 1px solid var(--gray-200); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr.off td { opacity: 0.38; }
+    td input[type=text] { width: 100%; border: 1px solid transparent; padding: 3px 6px; border-radius: 4px; font-size: 0.85rem; background: transparent; }
+    td input[type=text]:focus { outline: none; border-color: var(--red); background: var(--white); }
+    .badge { display: inline-block; padding: 2px 7px; border-radius: 10px; font-size: 0.72rem; font-weight: 600; background: var(--gray-100); color: var(--gray-500); }
+
+    .tog-row { display: flex; align-items: center; gap: 11px; margin-bottom: 10px; font-size: 0.875rem; }
+    .tog { position: relative; width: 42px; height: 22px; flex-shrink: 0; }
+    .tog input { opacity: 0; width: 0; height: 0; }
+    .tog-s { position: absolute; inset: 0; background: var(--gray-200); border-radius: 22px; cursor: pointer; transition: .2s; }
+    .tog-s:before { content:""; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: .2s; }
+    .tog input:checked + .tog-s { background: var(--red); }
+    .tog input:checked + .tog-s:before { transform: translateX(20px); }
+    input[type=range] { accent-color: var(--red); width: 180px; }
+
+    .spin { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.35); border-top-color: #fff; border-radius: 50%; animation: sp .55s linear infinite; }
+    @keyframes sp { to { transform: rotate(360deg); } }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<header>
+  <img src="/assets/ubs_logo.png" alt="UBS" onerror="this.style.display='none'">
+  <div>
+    <h1>&#128274; Mockify</h1>
+    <p>Generate anonymised client profiles for test data &nbsp;&middot;&nbsp; UBS Prototype</p>
+  </div>
+</header>
+
+<main>
+  <div id="alert" class="hidden"></div>
+
+  <div class="card">
+    <h2>&#128196; Upload Client PDF</h2>
+    <div class="drop-zone" id="dz" onclick="document.getElementById('fi').click()">
+      <input type="file" id="fi" accept=".pdf" style="display:none">
+      <div class="icon">&#128194;</div>
+      <div class="hint">Drag &amp; drop a PDF here, or click to browse</div>
+      <div class="fname" id="fname"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn primary" id="btn-detect" disabled onclick="runDetect()">&#128269; Detect PII</button>
+      <button class="btn secondary" onclick="loadSample()">&#128196; Load Sample Document</button>
+    </div>
+  </div>
+
+  <div class="card hidden" id="card-pii">
+    <h2>&#128269; Detected PII &mdash; Review &amp; Edit</h2>
+    <div class="stats" id="stats"></div>
+    <div class="filters">
+      <select id="ftype" onchange="renderTable()"><option value="">All PII types</option></select>
+      <input id="fsearch" type="text" placeholder="Search original value&hellip;" oninput="renderTable()">
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th style="width:36px">&#10003;</th><th style="width:110px">Type</th><th>Original Value</th><th>Proposed Replacement</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card hidden" id="card-gen">
+    <h2>&#9881;&#65039; Options &amp; Generate</h2>
+    <div class="tog-row">
+      <label class="tog"><input type="checkbox" id="tog-scale" onchange="showMult()"><span class="tog-s"></span></label>
+      <span>Scale financial figures</span>
+    </div>
+    <div id="mult-row" class="tog-row hidden" style="margin-left:53px">
+      <span style="color:var(--gray-500)">Multiplier:</span>
+      <input type="range" id="mult" min="0.5" max="2" step="0.05" value="1" oninput="document.getElementById('mult-v').textContent=(+this.value).toFixed(2)+'x'">
+      <span id="mult-v" style="font-weight:600;min-width:40px">1.00x</span>
+    </div>
+    <div class="btn-row">
+      <button class="btn primary" id="btn-gen" onclick="runGenerate()">&#9881;&#65039; Generate Anonymised PDF</button>
+      <button class="btn secondary" onclick="doReset()">&#128260; Reset</button>
+    </div>
+  </div>
+
+  <div class="card hidden" id="card-dl">
+    <h2>&#11015;&#65039; Download</h2>
+    <div class="stats" id="dl-stats"></div>
+    <a id="dl-link" class="btn success" style="text-decoration:none" download="anonymised_profile.pdf">&#11015;&#65039; Download Anonymised PDF</a>
+  </div>
+</main>
+
+<script>
+  var pdfFile = null, pdfB64 = null, items = [];
+
+  document.getElementById('fi').addEventListener('change', function(e) {
+    if (e.target.files[0]) setFile(e.target.files[0]);
+  });
+  var dz = document.getElementById('dz');
+  dz.addEventListener('dragover',  function(e) { e.preventDefault(); dz.classList.add('over'); });
+  dz.addEventListener('dragleave', function()  { dz.classList.remove('over'); });
+  dz.addEventListener('drop', function(e) {
+    e.preventDefault(); dz.classList.remove('over');
+    if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
+  });
+
+  function setFile(f) {
+    pdfFile = f; pdfB64 = null;
+    document.getElementById('fname').textContent = f.name;
+    document.getElementById('btn-detect').disabled = false;
+  }
+
+  async function loadSample() {
+    alert2('info', 'Loading sample document...');
+    try {
+      var r = await fetch('/api/sample');
+      if (!r.ok) throw new Error(await r.text());
+      var blob = await r.blob();
+      setFile(new File([blob], 'sample_client_profile.pdf', {type:'application/pdf'}));
+      clearAlert();
+    } catch(e) { alert2('error', 'Failed to load sample: ' + e.message); }
+  }
+
+  async function runDetect() {
+    var btn = document.getElementById('btn-detect');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin"></span> Detecting...';
+    alert2('info', 'Detecting PII — may take 15-30 seconds on first run while the model loads...');
+    try {
+      var form = new FormData();
+      form.append('file', pdfFile);
+      var r = await fetch('/api/detect', {method:'POST', body:form});
+      if (!r.ok) { var err = await r.json(); throw new Error(err.detail || r.statusText); }
+      var d = await r.json();
+      pdfB64 = d.pdf_b64;
+      items  = d.pii_items;
+      populateFilter();
+      renderTable();
+      show('card-pii'); show('card-gen'); hide('card-dl');
+      alert2('success', 'Found ' + d.n_pii + ' PII item(s) across ' + d.n_pages + ' page(s).');
+    } catch(e) { alert2('error', 'Detection failed: ' + e.message); }
+    finally { btn.disabled = false; btn.innerHTML = '&#128269; Detect PII'; }
+  }
+
+  function populateFilter() {
+    var types = items.map(function(x) { return x.pii_type; }).filter(function(v, i, a) { return a.indexOf(v) === i; }).sort();
+    var sel = document.getElementById('ftype');
+    sel.innerHTML = '<option value="">All PII types</option>' + types.map(function(t) { return '<option>' + t + '</option>'; }).join('');
+  }
+
+  function renderTable() {
+    var tf = document.getElementById('ftype').value;
+    var ts = document.getElementById('fsearch').value.toLowerCase();
+    var filtered = items.filter(function(x) { return (!tf || x.pii_type === tf) && (!ts || x.original.toLowerCase().indexOf(ts) !== -1); });
+    document.getElementById('tbody').innerHTML = filtered.map(function(item) {
+      var i = items.indexOf(item);
+      return '<tr class="' + (item.include ? '' : 'off') + '">' +
+        '<td><input type="checkbox" ' + (item.include ? 'checked' : '') + ' onchange="items[' + i + '].include=this.checked;renderTable()"></td>' +
+        '<td><span class="badge">' + esc(item.pii_type) + '</span></td>' +
+        '<td style="color:var(--gray-500)">' + esc(item.original) + '</td>' +
+        '<td><input type="text" value="' + esc(item.replacement) + '" oninput="items[' + i + '].replacement=this.value"></td>' +
+        '</tr>';
+    }).join('');
+    var inc = items.filter(function(x) { return x.include; }).length;
+    document.getElementById('stats').innerHTML = stat(items.length, 'Total PII items') + stat(inc, 'Will be anonymised');
+  }
+
+  function showMult() {
+    document.getElementById('mult-row').classList.toggle('hidden', !document.getElementById('tog-scale').checked);
+  }
+
+  async function runGenerate() {
+    var btn = document.getElementById('btn-gen');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin"></span> Generating...';
+    alert2('info', 'Anonymising and building PDF...');
+    try {
+      var r = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          pdf_b64: pdfB64,
+          pii_items: items,
+          scale_financials: document.getElementById('tog-scale').checked,
+          financial_multiplier: +document.getElementById('mult').value,
+        }),
+      });
+      if (!r.ok) { var err = await r.json(); throw new Error(err.detail || r.statusText); }
+      var blob = await r.blob();
+      var url = URL.createObjectURL(blob);
+      document.getElementById('dl-link').href = url;
+      var inc = items.filter(function(x) { return x.include; }).length;
+      document.getElementById('dl-stats').innerHTML = stat(inc, 'PII items replaced') + stat((blob.size/1024).toFixed(1) + ' KB', 'Output size');
+      show('card-dl');
+      alert2('success', 'PDF generated! Click the button below to download.');
+    } catch(e) { alert2('error', 'Generation failed: ' + e.message); }
+    finally { btn.disabled = false; btn.innerHTML = '&#9881;&#65039; Generate Anonymised PDF'; }
+  }
+
+  function doReset() {
+    pdfFile = pdfB64 = null; items = [];
+    document.getElementById('fi').value = '';
+    document.getElementById('fname').textContent = '';
+    document.getElementById('btn-detect').disabled = true;
+    ['card-pii','card-gen','card-dl'].forEach(hide);
+    clearAlert();
+  }
+
+  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function stat(v, l) { return '<div class="stat"><div class="v">' + v + '</div><div class="l">' + l + '</div></div>'; }
+  function show(id) { document.getElementById(id).classList.remove('hidden'); }
+  function hide(id) { document.getElementById(id).classList.add('hidden'); }
+  function alert2(type, msg) {
+    var el = document.getElementById('alert');
+    el.className = type; el.textContent = msg; el.classList.remove('hidden');
+  }
+  function clearAlert() { document.getElementById('alert').classList.add('hidden'); }
+</script>
+</body>
+</html>

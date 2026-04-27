@@ -1,3 +1,5 @@
+fastapi>=0.110.0
+python-multipart>=0.0.9
 streamlit>=1.35.0
 pdfplumber>=0.11.0
 reportlab>=4.2.0
