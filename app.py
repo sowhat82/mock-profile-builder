@@ -1,7 +1,8 @@
 """
-Mock Profile Builder — Streamlit UI
+Mockify — Streamlit UI
 Anonymises client PDF profiles for use as test data in wealth management systems.
 """
+import base64
 import io
 import os
 import re
@@ -17,14 +18,28 @@ from core.generator import generate_pdf
 # ─── Page config ──────────────────────────────────────────────────────────────
 
 st.set_page_config(
-    page_title="Mock Profile Builder",
+    page_title="Mockify",
     page_icon="🔒",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-st.title("🔒 Mock Profile Builder")
-st.caption("Upload a client PDF profile and generate a fully anonymised version for test data.")
+# ─── Header with UBS logo ─────────────────────────────────────────────────────
+
+_logo_path = os.path.join(os.path.dirname(__file__), "assets", "ubs_logo.png")
+_col_logo, _col_title = st.columns([1, 5])
+with _col_logo:
+    if os.path.exists(_logo_path):
+        with open(_logo_path, "rb") as _f:
+            _img = _f.read()
+        _b64 = base64.b64encode(_img).decode()
+        st.markdown(
+            f'<img src="data:image/png;base64,{_b64}" style="width:120px;margin-top:8px;">',
+            unsafe_allow_html=True,
+        )
+with _col_title:
+    st.title("🔒 Mockify")
+    st.caption("Upload a client PDF profile and generate a fully anonymised version for test data.")
 
 # ─── Session state initialisation ─────────────────────────────────────────────
 
@@ -191,7 +206,7 @@ with st.sidebar:
 if st.session_state.document is None:
     st.info("👈 Upload a PDF **or** click **Load sample document** in the sidebar, then click **Detect PII** to get started.")
     st.markdown("""
-    **What this tool does:**
+    **What Mockify does:**
     - Extracts all text from your PDF
     - Detects PII: names, emails, phone numbers, NRIC/passport numbers, addresses, financial figures, and more
     - Replaces each with a realistic but fake equivalent (consistently — same original → same replacement)
