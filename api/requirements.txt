@@ -3,3 +3,5 @@ pdfplumber>=0.11.0
 reportlab>=4.2.0
 Faker>=25.0.0
 Pillow>=10.0.0
+spacy>=3.7.0
+https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl
