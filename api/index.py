@@ -109,3 +109,18 @@ def get_sample():
 def health():
     spacy_ok, spacy_err = spacy_status()
     return jsonify({"status": "ok", "spacy": spacy_ok, "spacy_error": spacy_err})
+
+
+@app.route("/api/debug-ner")
+def debug_ner():
+    """Run NER on a fixed test string to verify spaCy entity detection works end-to-end."""
+    from core.detector import _nlp as detector_nlp
+    test_text = "Bernard Tan Wei Jian is a client of Meridian Private Bank in Singapore."
+    result = {"spacy_loaded": detector_nlp is not None, "entities": []}
+    if detector_nlp is not None:
+        try:
+            doc = detector_nlp(test_text)
+            result["entities"] = [{"text": e.text, "label": e.label_} for e in doc.ents]
+        except Exception as e:
+            result["ner_error"] = str(e)
+    return jsonify(result)
