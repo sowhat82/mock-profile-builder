@@ -10,20 +10,13 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from flask import Flask, request, jsonify, make_response
 
 from core.extractor import extract
-from core.detector import detect
+from core.detector import detect, spacy_status
 from core.mapper import MappingTable
 from core.anonymiser import anonymise_document
 from core.generator import generate_pdf
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 20 * 1024 * 1024  # 20 MB
-
-# Pre-load spaCy at module level so warm requests skip the cold-start penalty
-try:
-    import spacy as _spacy
-    _nlp = _spacy.load("en_core_web_sm")
-except Exception:
-    _nlp = None
 
 
 @app.after_request
@@ -48,6 +41,7 @@ def detect_pii():
         mapping = MappingTable(scale_financials=False, financial_multiplier=1.0)
         mapping.build_from_detections(detections)
         records = mapping.to_records()
+        spacy_ok, spacy_err = spacy_status()
         return jsonify({
             "pdf_b64": base64.b64encode(pdf_bytes).decode(),
             "pii_items": [
@@ -61,6 +55,8 @@ def detect_pii():
             ],
             "n_pages": len(document.pages),
             "n_pii": len(records),
+            "spacy_active": spacy_ok,
+            "spacy_error": spacy_err,
         })
     except Exception as e:
         return jsonify({"detail": str(e)}), 500
@@ -111,4 +107,5 @@ def get_sample():
 
 @app.route("/api/health")
 def health():
-    return jsonify({"status": "ok", "spacy": _nlp is not None})
+    spacy_ok, spacy_err = spacy_status()
+    return jsonify({"status": "ok", "spacy": spacy_ok, "spacy_error": spacy_err})
